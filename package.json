@@ -2,7 +2,7 @@
   "name": "alocador",
   "private": true,
   "type": "module",
-  "description": "Testes da lógica de cálculo do Alocador (sem dependências).",
+  "description": "Alocador de boletas da B3, site estático. Testes sem dependências.",
   "scripts": {
     "test": "node --test \"tests/*.test.js\""
   }

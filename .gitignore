@@ -1,12 +1,6 @@
-# Segredos
+# Segredos (o token da brapi fica só no navegador; nunca versione arquivos de ambiente)
 .env
-
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-.pytest_cache/
+.env.*
 
 # Node
 node_modules/
@@ -15,6 +9,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Fontes proprietárias (cada um coloca as suas em fonts/)
-fonts/*
-!fonts/LEIA-ME.txt
+# Fontes proprietárias
+fonts/

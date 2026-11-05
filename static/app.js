@@ -1,9 +1,10 @@
 // Tela do Alocador: estado, cotações automáticas, renderização e cópia das boletas.
 import * as C from "./calc.js";
+import { ServicoCotacoes, TICKER_VALIDO as TICKER_OK } from "./cotacoes.js";
 
 const CHAVE = "alocador.estado.v1";
 const ESPERA_DIGITACAO = 700; // ms de debounce ao digitar o ticker
-const TICKER_OK = /^[A-Z0-9]{4,12}$/;
+const servico = new ServicoCotacoes();
 const $ = (id) => document.getElementById(id);
 
 let proximoId = 1;
@@ -15,7 +16,7 @@ const novoAtivo = (dados = {}) => ({
   lote: 1,
   loteTocado: false,
   manual: false,
-  cot: null, // {fonte, horario} | {erro} | {carregando}
+  cot: null, // {fonte, horario} | {erro, mensagem, detalhe} | {carregando}
   ...dados,
 });
 
@@ -187,13 +188,19 @@ function renderPreco(a, { forcarValor = false } = {}) {
   input.classList.toggle("manual", a.manual);
   const meta = tr.querySelector("[data-meta]");
   meta.className = "meta-preco";
+  meta.title = "";
   if (a.manual) {
     meta.innerHTML = `<button type="button" class="selo-manual" data-acao="automatico" title="Voltar ao preço automático">manual · voltar ao automático</button>`;
   } else if (a.cot?.carregando) {
     meta.textContent = "buscando cotação…";
   } else if (a.cot?.erro) {
     meta.classList.add("erro");
-    meta.textContent = "Sem cotação, digite o preço";
+    const motivo = escapar(a.cot.mensagem || "Sem cotação");
+    const deToken = a.cot.erro === "SEM_TOKEN" || a.cot.erro === "TOKEN_INVALIDO";
+    meta.innerHTML = (deToken
+      ? `<button type="button" class="botao-texto" data-acao="configurar">${motivo}</button>`
+      : motivo) + " · digite o preço";
+    meta.title = a.cot.detalhe ? `${a.cot.mensagem}: ${a.cot.detalhe}` : a.cot.mensagem || "";
   } else if (a.cot?.fonte) {
     meta.textContent = `${a.cot.fonte} · ${quando(a.cot.horario)}`;
   } else {
@@ -256,6 +263,7 @@ function ligarTabela() {
   tbody.addEventListener("click", (e) => {
     const botao = e.target.closest("[data-acao]");
     if (!botao) return;
+    if (botao.dataset.acao === "configurar") { abrirConfiguracoes(); return; }
     const a = ativoDe(botao);
     if (!a) return;
     if (botao.dataset.acao === "remover") {
@@ -284,8 +292,67 @@ function ligarTabela() {
 
 // ---------- cotações ----------
 
+// ---------- configurações (token da brapi) ----------
+
+function renderStatusToken(resultado = null) {
+  const tem = Boolean(servico.token);
+  const status = $("statusToken");
+  status.className = "aviso-token";
+  if (resultado === "TOKEN_INVALIDO") {
+    status.classList.add("erro");
+    status.textContent = "A brapi recusou este token. Confira se copiou o token inteiro.";
+  } else if (tem && resultado === "ok") {
+    status.classList.add("ok");
+    status.textContent = "✓ Token salvo neste navegador e aceito pela brapi.";
+  } else if (tem) {
+    status.textContent = "Token salvo neste navegador.";
+  } else {
+    status.textContent = "Nenhum token salvo. Sem ele, quase todos os tickers ficam sem cotação.";
+  }
+  $("resumoConfig").textContent = tem ? "token da brapi salvo" : "falta o token da brapi";
+  $("resumoConfig").classList.toggle("erro", !tem);
+  $("apagarToken").hidden = !tem;
+}
+
+function abrirConfiguracoes() {
+  const bloco = $("blocoConfig");
+  bloco.open = true;
+  bloco.scrollIntoView({ behavior: "smooth", block: "start" });
+  $("tokenBrapi").focus({ preventScroll: true });
+}
+
+function ligarConfiguracoes() {
+  const campo = $("tokenBrapi");
+  campo.value = servico.token;
+  if (!servico.token) $("blocoConfig").open = true;
+  renderStatusToken();
+
+  let espera = null;
+  campo.addEventListener("input", () => {
+    clearTimeout(espera);
+    espera = setTimeout(async () => {
+      if (campo.value.trim() === servico.token) return;
+      servico.token = campo.value;
+      renderStatusToken();
+      await buscarCotacoes(estado.ativos, { forcar: true });
+    }, 500);
+  });
+  $("mostrarToken").addEventListener("click", (e) => {
+    const mostrar = campo.type === "password";
+    campo.type = mostrar ? "text" : "password";
+    e.currentTarget.textContent = mostrar ? "ocultar" : "mostrar";
+    e.currentTarget.setAttribute("aria-pressed", String(mostrar));
+  });
+  $("apagarToken").addEventListener("click", async () => {
+    servico.token = "";
+    campo.value = "";
+    renderStatusToken();
+    await buscarCotacoes(estado.ativos, { forcar: true });
+  });
+}
+
 /**
- * Busca no backend o preço dos ativos indicados que não estão em modo manual.
+ * Busca na brapi o preço dos ativos indicados que não estão em modo manual.
  * Só aplica a resposta se o ticker da linha ainda for o mesmo pedido.
  */
 async function buscarCotacoes(ativos, { forcar = false } = {}) {
@@ -299,17 +366,13 @@ async function buscarCotacoes(ativos, { forcar = false } = {}) {
     if (forcar || a.preco === null) { a.cot = { ...(a.cot || {}), carregando: true }; renderPreco(a); }
   }
   const tickers = [...new Set(alvos.map((a) => a.ticker))];
-  const respostas = {};
+  let respostas = {};
   try {
-    for (let i = 0; i < tickers.length; i += 30) {
-      const lote = tickers.slice(i, i + 30);
-      const r = await fetch(`/api/cotacoes?tickers=${encodeURIComponent(lote.join(","))}`);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      Object.assign(respostas, (await r.json()).cotacoes);
-    }
+    respostas = await servico.cotacoes(tickers);
   } catch (err) {
     console.warn("Falha ao buscar cotações:", err);
   }
+  const erros = new Set();
   for (const a of alvos) {
     if (a.manual || a.ticker !== pedidos.get(a)) continue; // mudou enquanto buscava
     const c = respostas[a.ticker];
@@ -318,10 +381,13 @@ async function buscarCotacoes(ativos, { forcar = false } = {}) {
       a.cot = { fonte: c.fonte, horario: c.horario };
     } else {
       a.preco = null;
-      a.cot = { erro: c?.erro || "Falha ao buscar cotação" };
+      a.cot = { erro: c?.erro || "RESPOSTA", mensagem: c?.mensagem || "Falha ao buscar cotação", detalhe: c?.detalhe || "" };
+      erros.add(a.cot.erro);
+      if (c?.detalhe) console.info(`Cotação de ${a.ticker}: ${c.mensagem} (${c.detalhe})`);
     }
     renderPreco(a, { forcarValor: true });
   }
+  if (servico.token) renderStatusToken(erros.has("TOKEN_INVALIDO") ? "TOKEN_INVALIDO" : erros.size < alvos.length ? "ok" : null);
   mudou();
 }
 
@@ -476,6 +542,7 @@ ligarTopo();
 renderLinhas();
 ligarTabela();
 ligarBoletas();
+ligarConfiguracoes();
 mudou();
 buscarCotacoes(estado.ativos);
 window.__alocador = { estado, calcular }; // ajuda para depuração no console

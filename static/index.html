@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="/fontes.css">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="app.js"></script>
 </head>
@@ -46,6 +45,30 @@
         <span>Usar a sobra para comprar mais cotas</span>
       </label>
     </section>
+
+    <details class="cartao custos" id="blocoConfig">
+      <summary><h2>Configurações</h2><span class="resumo-custos" id="resumoConfig"></span></summary>
+      <div class="config">
+        <div class="campo">
+          <label for="tokenBrapi">Token da brapi</label>
+          <div class="entrada">
+            <input id="tokenBrapi" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="cole o token aqui">
+            <button type="button" class="botao-texto" id="mostrarToken" aria-controls="tokenBrapi" aria-pressed="false">mostrar</button>
+          </div>
+          <p class="aviso-token" id="statusToken" aria-live="polite"></p>
+        </div>
+        <div class="instrucoes">
+          <p><strong>Onde obter:</strong></p>
+          <ol>
+            <li>Crie uma conta gratuita em <a href="https://brapi.dev" target="_blank" rel="noopener">brapi.dev</a>.</li>
+            <li>No <a href="https://brapi.dev/dashboard" target="_blank" rel="noopener">painel da brapi</a>, copie o seu token.</li>
+            <li>Cole o token no campo Token da brapi. Os preços são buscados de novo na hora.</li>
+          </ol>
+          <p>O token fica salvo só neste navegador e é enviado só para a brapi. Em outro aparelho ou navegador, cole de novo. Sem token, a brapi só responde alguns tickers de teste, como PETR4.</p>
+        </div>
+      </div>
+      <button type="button" class="botao secundario pequeno" id="apagarToken">Apagar token deste navegador</button>
+    </details>
 
     <details class="cartao custos" id="blocoCustos">
       <summary><h2>Custos e margens</h2><span class="resumo-custos" id="resumoCustos"></span></summary>
