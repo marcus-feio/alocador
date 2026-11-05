@@ -1,0 +1,9 @@
+{
+  "name": "alocador",
+  "private": true,
+  "type": "module",
+  "description": "Testes da lógica de cálculo do Alocador (sem dependências).",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}

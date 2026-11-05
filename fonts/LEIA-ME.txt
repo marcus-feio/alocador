@@ -1,0 +1,4 @@
+Coloque aqui os arquivos da fonte Roundkey (ou Knockout), em .woff2, .woff, .otf ou .ttf.
+O nome do arquivo precisa conter "roundkey" ou "knockout" (maiúsculas não importam).
+Com Roundkey presente, os títulos de seção usam Roundkey. Sem Roundkey e com Knockout, usam Knockout.
+Sem nenhum dos dois, tudo fica em Barlow. Os arquivos desta pasta não vão para o git.

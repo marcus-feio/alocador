@@ -1,0 +1,20 @@
+# Segredos
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Fontes proprietárias (cada um coloca as suas em fonts/)
+fonts/*
+!fonts/LEIA-ME.txt
