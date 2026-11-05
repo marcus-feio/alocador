@@ -426,8 +426,10 @@ function renderBoletas(r) {
 
 async function copiarTexto(texto) {
   if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(texto);
-    return;
+    try {
+      await navigator.clipboard.writeText(texto);
+      return;
+    } catch { /* permissão negada: tenta o método antigo */ }
   }
   // Celular acessando por IP (http) não tem a Clipboard API: usa o método antigo.
   const area = document.createElement("textarea");
