@@ -45,11 +45,10 @@ Os títulos de seção usam **Roundkey** (ou **Knockout**) se a fonte estiver in
 
 ## Rodar no computador
 
-O navegador não abre módulos JavaScript direto do disco, então é preciso um servidor de arquivos qualquer. Por exemplo:
+Não abra o `index.html` com dois cliques: o navegador bloqueia os scripts de arquivos abertos do disco (`file://`), e nenhum botão funciona. A página mostra um aviso quando isso acontece.
 
-```bash
-npx serve static
-```
+- **Windows:** dê dois cliques em `abrir.bat`. Ele serve a pasta `static` em `http://localhost:8000` e abre o navegador. Precisa do Python 3, usado só como servidor de arquivos.
+- **Qualquer sistema:** rode um servidor de arquivos na pasta `static`, por exemplo `python3 -m http.server -d static` ou `npx serve static`.
 
 ## Testes
 

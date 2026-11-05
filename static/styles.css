@@ -403,3 +403,7 @@ legend { padding: 0; margin-bottom: 8px; }
   .so-desktop { display: none !important; }
   .boletas tbody tr { grid-template-columns: 1fr 1fr 1fr; }
 }
+
+/* Aviso quando o app.js não carrega (por exemplo, arquivo aberto com file://) */
+.aviso-carga { max-width: 1152px; margin: 0 auto 24px; width: calc(100% - 48px); box-sizing: border-box; }
+.aviso-carga code { font-family: ui-monospace, Consolas, monospace; }

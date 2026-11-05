@@ -16,6 +16,8 @@
     <h1>Alocador</h1>
   </header>
 
+  <div class="alerta aviso-carga" id="avisoCarga" role="alert" hidden></div>
+
   <main>
     <section class="cartao topo" aria-label="Saldo e modelo de cobrança">
       <div class="campo campo-saldo">
@@ -165,5 +167,17 @@
   <footer class="rodape">
     Valores estimados com base na tabela de custos informada. Confira a tabela vigente do escritório antes de enviar as ordens.
   </footer>
+
+  <script>
+    // Script comum (não módulo): roda mesmo quando o app.js é bloqueado.
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.__alocador) return;
+      var aviso = document.getElementById("avisoCarga");
+      aviso.hidden = false;
+      aviso.innerHTML = location.protocol === "file:"
+        ? "<strong>O Alocador não funciona aberto direto do arquivo.</strong> O navegador bloqueia os scripts nesse caso, então os botões não respondem. Use o link do site ou, no computador, dê dois cliques em <code>abrir.bat</code>."
+        : "<strong>O Alocador não carregou.</strong> Recarregue a página. Se continuar, abra o console do navegador (F12) para ver o erro.";
+    });
+  </script>
 </body>
 </html>
