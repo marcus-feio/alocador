@@ -1,3 +1,146 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><title>Alocador</title></head>
-<body><h1>Alocador</h1></body></html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Alocador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/fontes.css">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="pagina-topo">
+    <h1>Alocador</h1>
+  </header>
+
+  <main>
+    <section class="cartao topo" aria-label="Saldo e modelo de cobrança">
+      <div class="campo campo-saldo">
+        <label for="saldo">Saldo disponível</label>
+        <div class="entrada moeda grande">
+          <span aria-hidden="true">R$</span>
+          <input id="saldo" inputmode="decimal" autocomplete="off" placeholder="0,00">
+        </div>
+      </div>
+      <div class="campo campo-caixa">
+        <label for="caixa">Deixar em caixa</label>
+        <div class="entrada moeda">
+          <span aria-hidden="true">R$</span>
+          <input id="caixa" inputmode="decimal" autocomplete="off" placeholder="0,00">
+        </div>
+      </div>
+      <fieldset class="modelos">
+        <legend>Modelo de cobrança</legend>
+        <div class="pilulas">
+          <label><input type="radio" name="modelo" value="assessor"><span>Comissão via assessor</span></label>
+          <label><input type="radio" name="modelo" value="app"><span>Comissão via app</span></label>
+          <label><input type="radio" name="modelo" value="fee"><span>Fee Fixo</span></label>
+        </div>
+      </fieldset>
+      <label class="checagem">
+        <input type="checkbox" id="usarSobra">
+        <span>Usar a sobra para comprar mais cotas</span>
+      </label>
+    </section>
+
+    <details class="cartao custos" id="blocoCustos">
+      <summary><h2>Custos e margens</h2><span class="resumo-custos" id="resumoCustos"></span></summary>
+      <div class="grade-parametros">
+        <div class="campo"><label for="p-precoFixo">Preço fixo por ordem (app)</label>
+          <div class="entrada moeda"><span aria-hidden="true">R$</span><input id="p-precoFixo" data-param="precoFixo" inputmode="decimal"></div></div>
+        <div class="campo"><label for="p-corretagemMinima">Corretagem mínima por ordem</label>
+          <div class="entrada moeda"><span aria-hidden="true">R$</span><input id="p-corretagemMinima" data-param="corretagemMinima" inputmode="decimal"></div></div>
+        <div class="campo"><label for="p-outrosBovespa">Outros Bovespa</label>
+          <div class="entrada pct"><input id="p-outrosBovespa" data-param="outrosBovespa" inputmode="decimal"><span aria-hidden="true">%</span></div></div>
+        <div class="campo"><label for="p-impostos">Impostos sobre corretagem (ISS, PIS, COFINS)</label>
+          <div class="entrada pct"><input id="p-impostos" data-param="impostos" inputmode="decimal"><span aria-hidden="true">%</span></div></div>
+        <div class="campo"><label for="p-emolumentos">Emolumentos e liquidação</label>
+          <div class="entrada pct"><input id="p-emolumentos" data-param="emolumentos" inputmode="decimal"><span aria-hidden="true">%</span></div></div>
+        <div class="campo"><label for="p-folga">Folga no preço (preço limite)</label>
+          <div class="entrada pct"><input id="p-folga" data-param="folga" inputmode="decimal"><span aria-hidden="true">%</span></div></div>
+        <div class="campo"><label for="p-margem">Margem sobre os custos</label>
+          <div class="entrada pct"><input id="p-margem" data-param="margem" inputmode="decimal"><span aria-hidden="true">%</span></div></div>
+      </div>
+      <button type="button" class="botao secundario pequeno" id="restaurarPadroes">Restaurar padrões</button>
+    </details>
+
+    <section class="cartao" aria-labelledby="tituloAtivos">
+      <div class="secao-topo">
+        <h2 id="tituloAtivos">Ativos</h2>
+        <button type="button" class="botao primario" id="atualizarPrecos">Atualizar preços</button>
+      </div>
+      <div class="tabela-rolagem">
+        <table class="tabela ativos">
+          <thead>
+            <tr>
+              <th scope="col">Ticker</th>
+              <th scope="col">Preço</th>
+              <th scope="col" class="num">Peso %</th>
+              <th scope="col">Lote</th>
+              <th scope="col" class="num">Quantidade</th>
+              <th scope="col" class="num">Financeiro</th>
+              <th scope="col" class="num">Custos</th>
+              <th scope="col" class="num">Peso final</th>
+              <th scope="col"><span class="sr">Remover</span></th>
+            </tr>
+          </thead>
+          <tbody id="linhasAtivos"></tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="2">Total</th>
+              <td class="num" id="somaPesos" data-rotulo="Soma dos pesos"></td>
+              <td class="so-desktop"></td>
+              <td class="so-desktop"></td>
+              <td class="num" id="totalFinanceiro" data-rotulo="Financeiro"></td>
+              <td class="num" id="totalCustos" data-rotulo="Custos"></td>
+              <td class="so-desktop"></td>
+              <td class="so-desktop"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <button type="button" class="botao secundario" id="adicionarAtivo">+ Adicionar ativo</button>
+    </section>
+
+    <section class="cartao" aria-labelledby="tituloConta">
+      <h2 id="tituloConta">Como a conta fica</h2>
+      <div class="barra" id="barraConta" role="img" aria-label=""></div>
+      <dl class="legenda" id="legendaConta"></dl>
+      <p class="status" id="statusConta"></p>
+      <div class="alerta" id="alertaInvariante" role="alert" hidden></div>
+    </section>
+
+    <section class="cartao" aria-labelledby="tituloBoletas">
+      <div class="secao-topo">
+        <h2 id="tituloBoletas">Boletas</h2>
+        <button type="button" class="botao neon" id="copiarBoletas">Copiar boletas</button>
+      </div>
+      <p class="aviso-copia" id="avisoCopia" aria-live="polite"></p>
+      <div class="tabela-rolagem">
+        <table class="tabela boletas">
+          <thead>
+            <tr>
+              <th scope="col">Operação</th>
+              <th scope="col">Ticker</th>
+              <th scope="col" class="num">Quantidade</th>
+              <th scope="col" class="num">Preço limite</th>
+              <th scope="col" class="num">Financeiro</th>
+              <th scope="col">Mercado</th>
+            </tr>
+          </thead>
+          <tbody id="linhasBoletas"></tbody>
+        </table>
+      </div>
+      <p class="vazio" id="semBoletas">Nenhuma ordem. Informe o saldo e os ativos.</p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    Valores estimados com base na tabela de custos informada. Confira a tabela vigente do escritório antes de enviar as ordens.
+  </footer>
+</body>
+</html>

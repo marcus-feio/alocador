@@ -217,5 +217,6 @@ class ServicoCotacoes:
             log.info("yahoo falhou para %s: %s", base, e)
             r = None
         if r:
-            return Cotacao(base, r[0], _iso(r[1]), "yahoo")
+            # Yahoo devolve float32 (128.3800048…); preços na B3 têm 2 casas.
+            return Cotacao(base, round(r[0], 2), _iso(r[1]), "yahoo")
         return Cotacao(base, None, None, None, "Sem cotação nas fontes disponíveis")
